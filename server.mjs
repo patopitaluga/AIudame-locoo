@@ -43,7 +43,7 @@ app.post('/aiudame-locoo', (req, res) => {
   openai.createCompletion({
     model: 'text-davinci-003',
     prompt: req.body.prompt,
-    max_tokens: 150,
+    max_tokens: 250,
   })
     .then((_) => {
       res.send({

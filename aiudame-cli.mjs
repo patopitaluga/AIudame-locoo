@@ -23,8 +23,9 @@ fs.stat('./cache.json', (err) => {
     fs.writeFileSync('./cache.json', '[]');
 });
 
-console.log('\x1b[34m');
-console.log('');
+console.log('\x1b[37m'); // color white
+console.log('Thinking...');
+console.log('\x1b[33m'); // color yellow
 
 let argumentsStr = '';
 for (let i = 2; i < process.argv.length; i++) {
@@ -35,9 +36,10 @@ const prevCache = fs.readFileSync(path.resolve(__dirname, './cache.json'), 'utf8
 const cacheJson = JSON.parse(prevCache);
 const existing = cacheJson.find((_) => _.prompt === argumentsStr);
 if (existing) {
+  console.log('');
   console.log(existing.anwser);
-  console.log('\x1b[0m');
   pbcopy(existing.anwser);
+  console.log('\x1b[0m'); // reset color
   console.log('copied ✔');
 } else {
 openai.createCompletion({
@@ -46,14 +48,15 @@ openai.createCompletion({
   max_tokens: 150,
 })
   .then((_) => {
+    console.log('');
     console.log(_.data.choices[0].text.trim());
     cacheJson.push({
       prompt: argumentsStr,
       anwser: _.data.choices[0].text.trim(),
     });
     fs.writeFileSync(path.resolve(__dirname, './cache.json'), JSON.stringify(cacheJson, null, 2));
-    console.log('\x1b[0m');
     pbcopy(_.data.choices[0].text.trim());
+    console.log('\x1b[0m'); // reset color
     console.log('copied ✔');
   })
   .catch((_) => { throw _; });
