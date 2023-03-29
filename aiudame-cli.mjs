@@ -7,57 +7,31 @@ fs.readFileSync(path.resolve(__dirname, './.env'), 'utf8').split(/[\r\n]+/).forE
   process.env[parts[0]] = parts[1];
 });
 import { spawn } from 'child_process';
+import { AIudame } from './aiudame-core.mjs';
+
+/**
+ * @param {string} data -
+ */
 function pbcopy(data) {
   var proc = spawn('pbcopy');
   proc.stdin.write(data); proc.stdin.end();
 }
-
-import { Configuration, OpenAIApi } from 'openai';
-const openai = new OpenAIApi(new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-}));
-
-// create cache file if doesn't exists.
-fs.stat('./cache.json', (err) => {
-  if (err && err.code === 'ENOENT')
-    fs.writeFileSync('./cache.json', '[]');
-});
-
-console.log('\x1b[37m'); // color white
-console.log('Thinking...');
-console.log('\x1b[33m'); // color yellow
 
 let argumentsStr = '';
 for (let i = 2; i < process.argv.length; i++) {
   argumentsStr += ' ' + process.argv[i];
 }
 
-const prevCache = fs.readFileSync(path.resolve(__dirname, './cache.json'), 'utf8');
-const cacheJson = JSON.parse(prevCache);
-const existing = cacheJson.find((_) => _.prompt === argumentsStr);
-if (existing) {
-  console.log('');
-  console.log(existing.anwser);
-  pbcopy(existing.anwser);
-  console.log('\x1b[0m'); // reset color
-  console.log('copied ✔');
-} else {
-openai.createCompletion({
-  model: 'text-davinci-003',
-  prompt: argumentsStr,
-  max_tokens: 150,
-})
+console.log('\x1b[37m'); // color white
+console.log('Thinking...');
+console.log('\x1b[33m'); // color yellow
+
+AIudame(argumentsStr)
   .then((_) => {
     console.log('');
-    console.log(_.data.choices[0].text.trim());
-    cacheJson.push({
-      prompt: argumentsStr,
-      anwser: _.data.choices[0].text.trim(),
-    });
-    fs.writeFileSync(path.resolve(__dirname, './cache.json'), JSON.stringify(cacheJson, null, 2));
-    pbcopy(_.data.choices[0].text.trim());
+    console.log(_);
+    pbcopy(_);
     console.log('\x1b[0m'); // reset color
     console.log('copied ✔');
   })
-  .catch((_) => { throw _; });
-}
+  .catch((err) => console.log(err));

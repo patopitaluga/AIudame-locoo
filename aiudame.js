@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// This file is to get a easy terminal interface e.g. "node auidame something". The core will be in aiudame-core.js
 const { spawnSync } = require('child_process');
 const { resolve } = require('path');
 

@@ -107,13 +107,7 @@
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            prompt: `
-I need you to help me to solve this in javascript or node:
-
-${vrPrompt.value}
-
-Anwser with a code example
-            `,
+            prompt: vrPrompt.value,
           }),
         })
           .then((_) => _.json())
