@@ -1,0 +1,20 @@
+{
+  "name": "aiudame-vscode-extension",
+  "displayName": "aiudame-vscode-extension",
+  "description": "AIudadame VSCode extension",
+  "version": "1.0.0",
+  "engines": {
+    "vscode": "^1.51.0"
+  },
+  "categories": ["Other"],
+  "activationEvents": [],
+  "main": "./aiudame-extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "aiudame.aiudame",
+        "title": "AIudame text completion"
+      }
+    ]
+  }
+}

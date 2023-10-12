@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="es-es">
+<head>
+  <meta charset="utf-8">
+  <title>AIudame Locoo GPT3 code helper</title>
+
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, viewport-fit=cover">
+
+  <style>
+    body {
+      font-family: monospace;
+    }
+    [v-cloak] {
+      display: none !important
+    }
+    /* Hide Vue while loading */
+  </style>
+</head>
+<body>
+<div id="app-container">
+  <div style="display: flex; padding-bottom: 16px;">
+    <img src="./aiyudame.png" alt="" width="70" style="margin-right: 16px;"/>
+    <h1>AIudame locoo</h1>
+  </div>
+  <div style="padding: 0 8px 8px 0;">
+    Prompt:
+  </div>
+  <textarea
+    v-model="vrPrompt"
+    style="width: 100%; height: 80px;"
+    ref="focusMe"
+    @keypress.enter="mtdQueryAI"
+  ></textarea>
+  <div v-cloak>
+    <button
+      v-if="!vrThinking && vrPrompt !== '' && vrPrompt !== vrLastPrompt"
+      @click="mtdQueryAI"
+      style="cursor: pointer; padding: 8px 16px;"
+    >Send</button>
+    <div v-if="vrThinking">
+      Thinking...
+    </div>
+    <div v-if="vrIaResponse.length > 0">
+      <div style="padding: 0 8px 8px 0;">
+        Answer:
+      </div>
+
+      <pre
+        style="border: 1px #666 solid;"
+        id="pre-element"
+      >{{vrIaResponse}}</pre>
+
+      <button
+        v-if="!vrCopyDone"
+        @click="copyToClipboard"
+        style="cursor: pointer; padding: 8px 16px;"
+      >Copy to clipboard</button>
+
+    </div>
+  </div>
+</div>
+
+<!--
+  currently not working
+<script src="https://unpkg.com/vue@3"></script>
+-->
+<!--
+  alternative:
+-->
+<script src="https://cdn.jsdelivr.net/npm/vue@3.2.47/dist/vue.global.min.js"></script>
+<script>
+  Vue.createApp({
+    setup: function() {
+      const vrIaResponse = Vue.ref('');
+      const vrThinking = Vue.ref(false);
+      const vrPrompt = Vue.ref('');
+      const vrLastPrompt = Vue.ref('');
+      const focusMe = Vue.ref(null);
+      const vrCopyDone = Vue.ref(false);
+
+      Vue.onMounted(() => {
+        focusMe.value.focus();
+      })
+
+      const copyToClipboard = () => {
+        vrCopyDone.value = true;
+        const preElementText = document.getElementById('pre-element').innerText;
+        const tempElement = document.createElement('textarea');
+        tempElement.value = preElementText;
+        document.body.append(tempElement);
+        tempElement.select();
+        document.execCommand('copy');
+        tempElement.remove();
+      };
+
+      const mtdQueryAI = (event) => {
+        if (event.shiftKey === true) return;
+        if (vrPrompt.value === '' || vrThinking.value) return;
+
+        vrLastPrompt.value = vrPrompt.value;
+        vrIaResponse.value = '';
+        vrThinking.value = true;
+
+        fetch('/aiudame-locoo', {
+          method: 'post',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            prompt: vrPrompt.value,
+          }),
+        })
+          .then((_) => _.json())
+          .then((_) => {
+            vrCopyDone.value = false;
+            vrThinking.value = false;
+            vrIaResponse.value = _.response;
+          })
+          .catch((error) => {
+            console.error('Error: ', error);
+          });
+      }
+
+      return {
+        vrIaResponse,
+        vrThinking,
+        vrLastPrompt,
+        vrPrompt,
+        focusMe,
+        mtdQueryAI,
+        copyToClipboard,
+      };
+    },
+  }).mount('#app-container');
+</script>
+</body>
+</html>
