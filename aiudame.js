@@ -8,6 +8,11 @@ for (let i = 2; i < process.argv.length; i++) {
   argumentsStr += ' ' + process.argv[i];
 }
 
-let cmd = 'node --experimental-modules --no-warnings ' + resolve(__dirname, 'aiudame-cli.mjs' + argumentsStr);
-cmd = cmd.replace(RegExp('"', 'g'), '\\"');
-spawnSync(cmd, { stdio: 'inherit', shell: true });
+if (argumentsStr.trim().startsWith('continuous')) {
+  let cmd = 'node --experimental-modules --no-warnings ' + resolve(__dirname, 'aiudame-continuous.mjs' + argumentsStr);
+  spawnSync(cmd, { stdio: 'inherit', shell: true });
+} else {
+  let cmd = 'node --experimental-modules --no-warnings ' + resolve(__dirname, 'aiudame-cli.mjs' + argumentsStr);
+  cmd = cmd.replace(RegExp('"', 'g'), '\\"');
+  spawnSync(cmd, { stdio: 'inherit', shell: true });
+}

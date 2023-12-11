@@ -21,6 +21,11 @@ npm install
 node aiudame your prompt
 ```
 
+## To add alias to .zshrc
+```console
+alias aiudame='node ~/your-path/AIudame-locoo/aiudame'
+```
+
 ______
 
 ## As http server
