@@ -8,10 +8,9 @@ if (!process.env.OPENAI_API_KEY) throw new Error('Missing process.env.OPENAI_API
 
 import * as fs from 'fs';
 import * as path from 'path';
-import { Configuration, OpenAIApi } from 'openai';
-const openai = new OpenAIApi(new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-}));
+
+import OpenAI from 'openai';
+const openai = new OpenAI(); // process.env.OPENAI_API_KEY by default apiKey
 
 export const AIudame = (userPrompt) => {
   let prevCache;
@@ -20,28 +19,29 @@ export const AIudame = (userPrompt) => {
   } catch (error) {
     prevCache = '[]';
   }
+
   const cacheJson = JSON.parse(prevCache);
   const existing = cacheJson.find((_) => _.prompt === argumentsStr);
   return new Promise((resolve, reject) => {
     if (existing) {
       resolve(existing.anwser);
     } else {
-      openai.createCompletion({
-        prompt: `
-Assume that I am a software engineer. Answer this with code example if necessary:
-
-${userPrompt}
-`,
-        // These config is the same one that uses https://platform.openai.com/codex-javascript-sandbox
-        model: 'text-davinci-003',
+      openai.chat.completions.create({
+        messages: [{ role: 'user', content: `
+        Assume that I am a software engineer. Answer this with code example if necessary:
+        
+        ${userPrompt}
+        `.replace(/^ +/gm, '') }],
+        model: 'gpt-3.5-turbo',
         max_tokens: 1000,
         temperature: 0,
       })
         .then((_) => {
-          resolve(_.data.choices[0].text.trim());
+          const answer = _.choices[0].message.content.trim();
+          resolve(answer);
           cacheJson.push({
             prompt: argumentsStr,
-            anwser: _.data.choices[0].text.trim(),
+            anwser,
           });
           fs.writeFileSync(path.resolve(__dirname, './cache.json'), JSON.stringify(cacheJson, null, 2));
         })
